@@ -1,0 +1,9 @@
+version: "3.8"
+
+services:
+  plex-lidarr-sync:
+    build: .
+    container_name: plex-lidarr-sync
+    env_file:
+      - .env
+    restart: "no"
