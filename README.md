@@ -111,22 +111,6 @@ To automate disliked album detection:
 
 1. Optional: Use Lidarr Album Editor → Delete Files to remove tagged albums automatically.
 
-## Docker-Compose Example
-
-```yaml
-version: "3.8"
-
-services:
-  plex-lidarr-sync:
-    build: .
-    container_name: plex-lidarr-sync
-    env_file:
-      - .env
-    restart: "no"
-```
-
-> Container exits after each run; scheduling handled via cron.
-
 ## Dry-Run Mode
 
 - `DRY_RUN=true` in `.env` mode will only print actions without tagging or modifying Lidarr.
