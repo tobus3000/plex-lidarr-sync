@@ -26,7 +26,7 @@ Automatically sync your Plex music ratings and playlists with Lidarr to **tag, b
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/plex-lidarr-sync.git
+git clone https://github.com/tobus3000/plex-lidarr-sync.git
 cd plex-lidarr-sync
 ```
 
