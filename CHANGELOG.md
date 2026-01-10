@@ -79,7 +79,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 
 - [README.md](README.md) - Installation and usage guide
-- [RELEASE_NOTES.md](RELEASE_NOTES.md) - Initial release details
 - Module docstrings - Comprehensive function documentation
 - `.env-example` - Configuration template with descriptions
 
