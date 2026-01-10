@@ -12,7 +12,6 @@ Environment Variables:
     LIDARR_URL: URL of the Lidarr server (required)
     LIDARR_API_KEY: Authentication key for Lidarr API (required)
     LIDARR_TAG: Tag label to apply in Lidarr (default: 'plex_disliked')
-    RATING_THRESHOLD: Minimum rating threshold (default: 2)
     REQUEST_TIMEOUT: API request timeout in seconds (default: 10)
     DRY_RUN: Preview changes without applying them (default: 'true')
 """
@@ -36,7 +35,6 @@ LIDARR_URL = os.getenv("LIDARR_URL")
 LIDARR_API_KEY = os.getenv("LIDARR_API_KEY")
 LIBRARY_NAME = os.getenv("PLEX_MUSIC_LIBRARY")
 PLAYLIST_NAME = os.getenv("PLEX_PLAYLIST_NAME")
-RATING_THRESHOLD = int(os.getenv("RATING_THRESHOLD", "2"))
 LIDARR_TAG = os.getenv("LIDARR_TAG", "plex_disliked")
 DRY_RUN = os.getenv("DRY_RUN", "true").lower() == "true"
 REQUEST_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT", "10"))
