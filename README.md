@@ -25,10 +25,21 @@ Automatically sync your Plex music ratings and playlists with Lidarr to **tag, b
 
 1. Clone the repository:
 
+### **Option A**: Latest development version (main branch)
+
 ```bash
 git clone https://github.com/tobus3000/plex-lidarr-sync.git
 cd plex-lidarr-sync
 ```
+
+### **Option B**: Specific release version (stable)
+
+```bash
+git clone --branch v1.0.0 https://github.com/tobus3000/plex-lidarr-sync.git
+cd plex-lidarr-sync
+```
+
+> Replace `v1.0.0` with your desired release tag. See [releases](https://github.com/tobus3000/plex-lidarr-sync/releases) for available versions.
 
 1. Create a `.env` file based on the provided template:
 
@@ -114,6 +125,45 @@ To automate disliked album detection:
 
 - `DRY_RUN=true` in `.env` mode will only print actions without tagging or modifying Lidarr.
 - Once verified, set `DRY_RUN=false` for production.
+
+## Updating
+
+To update to a new version:
+
+### **Option A**: Update to latest development version (main branch)
+
+```bash
+git pull origin main
+```
+
+### **Option B**: Update to specific release version (stable)
+
+```bash
+git fetch --tags
+git checkout v1.0.0
+```
+
+> Replace `v1.0.0` with your desired release tag. See [releases](https://github.com/tobus3000/plex-lidarr-sync/releases) for available versions.
+
+1. Rebuild the Docker image:
+
+```bash
+docker-compose build --no-cache
+```
+
+1. Test with dry-run mode first:
+
+```bash
+DRY_RUN=true docker-compose up plex-lidarr-sync
+```
+
+1. Once verified, run with your configured settings:
+
+```bash
+docker-compose up plex-lidarr-sync
+```
+
+Check [CHANGELOG.md](CHANGELOG.md) for version-specific changes.
 
 ## Example Workflow
 
