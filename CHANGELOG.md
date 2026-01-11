@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Installation Options**: Support for cloning either the latest development version (main branch) or specific release tags
+- **Update Options**: Support for updating to either the latest development version or specific release tags
+- **Release Guide**: Links to releases page for easy version discovery
+- **Docker Logging Integration**: Logging now outputs to STDOUT and is captured by Docker's logging system
+
+### Changed
+
+- **README.md**: Updated Installation section with dual options (main branch vs release tag)
+- **README.md**: Updated Updating section with dual options (main branch vs release tag)
+- **Documentation**: Improved clarity for users choosing between development and stable versions
+- **plex_lidarr_sync.py**: Modified logging configuration to output to STDOUT for Docker capture
+- **docker-compose.yml**: Updated configuration to properly capture application logs
+
 ## [1.0.0] - 2026-01-10
 
 ### Added
