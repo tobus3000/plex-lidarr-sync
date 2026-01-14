@@ -90,7 +90,7 @@ def lidarr_get(endpoint: str) -> Any:
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
-        logger.error("Failed to fetch from Lidarr (%s): %s", endpoint, e)
+        logger.error("Failed to GET from Lidarr (%s): %s", endpoint, e)
         sys.exit(1)
     except ValueError as e:
         logger.error("Invalid JSON response from Lidarr (%s): %s", endpoint, e)
@@ -120,9 +120,34 @@ def lidarr_post(endpoint: str, payload: Dict[str, Any]) -> requests.Response:
         response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
-        logger.error("Failed to post to Lidarr (%s): %s", endpoint, e)
+        logger.error("Failed to POST to Lidarr (%s): %s", endpoint, e)
         sys.exit(1)
 
+def lidarr_put(endpoint: str, payload: Dict[str, Any]) -> requests.Response:
+    """Send a PUT request to the Lidarr API.
+    
+    Args:
+        endpoint: The API endpoint path (without base URL).
+        payload: The JSON payload to send in the request body.
+        
+    Returns:
+        The response object from the API.
+        
+    Raises:
+        SystemExit: If the request fails.
+    """
+    try:
+        response = requests.put(
+            f"{LIDARR_URL}/api/v1/{endpoint}",
+            json=payload,
+            headers=headers,
+            timeout=REQUEST_TIMEOUT
+        )
+        response.raise_for_status()
+        return response
+    except requests.exceptions.RequestException as e:
+        logger.error("Failed to PUT to Lidarr (%s): %s", endpoint, e)
+        sys.exit(1)
 
 def get_or_create_tag() -> Optional[int]:
     """Get or create a tag in Lidarr.
@@ -191,11 +216,7 @@ def main() -> None:
 
                 if tag_id is not None:
                     album["tags"].append(tag_id)
-                    lidarr_post("album/editor", {
-                        "albumIds": [album["id"]],
-                        "tags": album["tags"],
-                        "applyTags": "add"
-                    })
+                    lidarr_put(f"album/{album['id']}", album)
                     tagged_count += 1
 
         logger.info("Sync complete. Tagged %d albums", tagged_count)
