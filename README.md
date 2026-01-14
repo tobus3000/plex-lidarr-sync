@@ -1,12 +1,13 @@
 # Plex → Lidarr Sync
 
-Automatically sync your Plex music ratings and playlists with Lidarr to **tag, block, and optionally remove disliked albums**. This Dockerized service is ideal for users who rate music manually in Plex or maintain smart playlists for disliked tracks.
+Automatically sync your Plex music ratings and playlists with Lidarr to **remove disliked albums** but also to **block** the album from being re-downloaded.
+
+This Dockerized service is ideal for users who rate music manually in Plex and maintain smart playlists for disliked tracks.
 
 ## Features
 
-- Sync albums from Plex based on **ratings** or **smart playlists**.
-- Automatically add a **Lidarr tag** to disliked albums.
-- Optionally prevent Lidarr from re-downloading tagged albums.
+- Sync albums from Plex based on **ratings** and **smart playlist**.
+- Prevent Lidarr from re-downloading deleted albums.
 - Fully **Dockerized** for Linux hosts.
 - Safe-by-default **dry-run mode** before making changes.
 - Works with **Plex Pass** users and multiple libraries.
@@ -35,11 +36,11 @@ cd plex-lidarr-sync
 ### **Option B**: Specific release version (stable)
 
 ```bash
-git clone --branch v1.0.0 https://github.com/tobus3000/plex-lidarr-sync.git
+git clone --branch v1.0.1 https://github.com/tobus3000/plex-lidarr-sync.git
 cd plex-lidarr-sync
 ```
 
-> Replace `v1.0.0` with your desired release tag. See [releases](https://github.com/tobus3000/plex-lidarr-sync/releases) for available versions.
+> Replace `v1.0.1` with your desired release tag. See [releases](https://github.com/tobus3000/plex-lidarr-sync/releases) for available versions.
 
 1. Create a `.env` file based on the provided template:
 
@@ -50,7 +51,6 @@ LIDARR_URL=http://lidarr:8686
 LIDARR_API_KEY=YOUR_LIDARR_API_KEY
 PLEX_MUSIC_LIBRARY=Music
 PLEX_PLAYLIST_NAME=Disliked Music
-LIDARR_TAG=plex_disliked
 REQUEST_TIMEOUT=10
 DRY_RUN=true
 ```
@@ -71,7 +71,7 @@ docker-compose build
 docker-compose up plex-lidarr-sync
 ```
 
-You should see output listing albums that would be tagged in Lidarr. Once verified:
+You should see output listing albums that would be deleted in Lidarr. Once verified:
 
 ```bash
 # Disable dry-run
@@ -134,18 +134,11 @@ To automate disliked album detection:
 
 ## Lidarr Setup
 
-1. Create or let the script create a tag (default: plex_disliked).
-
-1. Update Lidarr profiles:
-
-- Enable Do not download tagged albums.
-- Enable Do not upgrade tagged albums (optional).
-
-1. Optional: Use Lidarr Album Editor → Delete Files to remove tagged albums automatically.
+No special setup is required.
 
 ## Dry-Run Mode
 
-- `DRY_RUN=true` in `.env` mode will only print actions without tagging or modifying Lidarr.
+- `DRY_RUN=true` in `.env` mode will only print actions without deleting albums from Lidarr.
 - Once verified, set `DRY_RUN=false` for production.
 
 ## Updating
@@ -162,10 +155,10 @@ git pull origin main
 
 ```bash
 git fetch --tags
-git checkout v1.0.0
+git checkout v1.0.1
 ```
 
-> Replace `v1.0.0` with your desired release tag. See [releases](https://github.com/tobus3000/plex-lidarr-sync/releases) for available versions.
+> Replace `v1.0.1` with your desired release tag. See [releases](https://github.com/tobus3000/plex-lidarr-sync/releases) for available versions.
 
 1. Rebuild the Docker image:
 
@@ -192,11 +185,9 @@ Check [CHANGELOG.md](CHANGELOG.md) for version-specific changes.
 1. Rate music in Plex manually (1–5 stars).
 1. The smart playlist automatically updates with albums rated ≤ 2 stars.
 1. Nightly cron runs the container:
-   - inds disliked albums in Plex
-   - Tags them in Lidarr
+   - Reads disliked albums from Plex playlist
+   - Deletes them in Lidarr
    - Blocks future downloads
-
-1. Optional: Manually or automatically remove tagged albums via Lidarr.
 
 ## Contributing
 

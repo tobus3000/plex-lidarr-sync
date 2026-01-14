@@ -1,8 +1,9 @@
 """Synchronize disliked albums from Plex to Lidarr.
 
 This script reads a Plex playlist to identify disliked albums and automatically
-tags them in Lidarr with a configured tag label. It provides a dry-run mode to
-preview changes before applying them, and supports configurable timeouts for API requests.
+deletes them and adds them to the blocklist to prevent them from being re-downloaded in Lidarr.
+It provides a dry-run mode to preview changes before applying them, and supports configurable
+timeouts for API requests.
 
 Environment Variables:
     PLEX_URL: URL of the Plex server (required)
@@ -11,14 +12,14 @@ Environment Variables:
     PLEX_PLAYLIST_NAME: Name of the Plex playlist containing disliked albums (required)
     LIDARR_URL: URL of the Lidarr server (required)
     LIDARR_API_KEY: Authentication key for Lidarr API (required)
-    LIDARR_TAG: Tag label to apply in Lidarr (default: 'plex_disliked')
     REQUEST_TIMEOUT: API request timeout in seconds (default: 10)
     DRY_RUN: Preview changes without applying them (default: 'true')
 """
+
 import os
 import sys
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 import requests
 from plexapi.server import PlexServer
 
@@ -27,7 +28,7 @@ from plexapi.server import PlexServer
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler()]
+    handlers=[logging.StreamHandler()],
 )
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,6 @@ LIDARR_URL = os.getenv("LIDARR_URL")
 LIDARR_API_KEY = os.getenv("LIDARR_API_KEY")
 LIBRARY_NAME = os.getenv("PLEX_MUSIC_LIBRARY")
 PLAYLIST_NAME = os.getenv("PLEX_PLAYLIST_NAME")
-LIDARR_TAG = os.getenv("LIDARR_TAG", "plex_disliked")
 DRY_RUN = os.getenv("DRY_RUN", "true").lower() == "true"
 REQUEST_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT", "10"))
 
@@ -47,7 +47,7 @@ headers = {"X-Api-Key": LIDARR_API_KEY}
 
 def validate_config() -> None:
     """Validate that all required environment variables are set.
-    
+
     Raises:
         SystemExit: If any required environment variable is missing.
     """
@@ -63,29 +63,26 @@ def validate_config() -> None:
     missing_vars = [name for name, value in required_vars.items() if not value]
     if missing_vars:
         logger.error(
-            "Missing required environment variables: %s",
-            ", ".join(missing_vars)
+            "Missing required environment variables: %s", ", ".join(missing_vars)
         )
         sys.exit(1)
 
 
 def lidarr_get(endpoint: str) -> Any:
     """Fetch data from Lidarr API.
-    
+
     Args:
         endpoint: The API endpoint path (without base URL).
-        
+
     Returns:
         The JSON response from the API.
-        
+
     Raises:
         SystemExit: If the request fails or returns invalid JSON.
     """
     try:
         response = requests.get(
-            f"{LIDARR_URL}/api/v1/{endpoint}",
-            headers=headers,
-            timeout=REQUEST_TIMEOUT
+            f"{LIDARR_URL}/api/v1/{endpoint}", headers=headers, timeout=REQUEST_TIMEOUT
         )
         response.raise_for_status()
         return response.json()
@@ -97,49 +94,21 @@ def lidarr_get(endpoint: str) -> Any:
         sys.exit(1)
 
 
-def lidarr_post(endpoint: str, payload: Dict[str, Any]) -> requests.Response:
-    """Send a POST request to the Lidarr API.
-    
-    Args:
-        endpoint: The API endpoint path (without base URL).
-        payload: The JSON payload to send in the request body.
-        
-    Returns:
-        The response object from the API.
-        
-    Raises:
-        SystemExit: If the request fails.
-    """
-    try:
-        response = requests.post(
-            f"{LIDARR_URL}/api/v1/{endpoint}",
-            json=payload,
-            headers=headers,
-            timeout=REQUEST_TIMEOUT
-        )
-        response.raise_for_status()
-        return response
-    except requests.exceptions.RequestException as e:
-        logger.error("Failed to POST to Lidarr (%s): %s", endpoint, e)
-        sys.exit(1)
-
 def lidarr_delete(endpoint: str) -> requests.Response:
     """Send a DELETE request to the Lidarr API.
-    
+
     Args:
         endpoint: The API endpoint path (without base URL).
-        
+
     Returns:
         The response object from the API.
-        
+
     Raises:
         SystemExit: If the request fails.
     """
     try:
         response = requests.delete(
-            f"{LIDARR_URL}/api/v1/{endpoint}",
-            headers=headers,
-            timeout=REQUEST_TIMEOUT
+            f"{LIDARR_URL}/api/v1/{endpoint}", headers=headers, timeout=REQUEST_TIMEOUT
         )
         response.raise_for_status()
         return response
@@ -147,35 +116,10 @@ def lidarr_delete(endpoint: str) -> requests.Response:
         logger.error("Failed to DELETE from Lidarr (%s): %s", endpoint, e)
         sys.exit(1)
 
-def get_or_create_tag() -> Optional[int]:
-    """Get or create a tag in Lidarr.
-    
-    Searches for an existing tag with the configured name. If not found and not in
-    dry run mode, creates a new tag.
-    
-    Returns:
-        The tag ID if found or created, None in dry run mode when tag doesn't exist.
-    """
-    tags = lidarr_get("tag")
-    for tag in tags:
-        if tag["label"] == LIDARR_TAG:
-            logger.info("Found existing tag: %s (ID: %s)", LIDARR_TAG, tag["id"])
-            return tag["id"]
-
-    if DRY_RUN:
-        logger.info("[DRY RUN] Would create tag: %s", LIDARR_TAG)
-        return None
-
-    logger.info("Creating new tag: %s", LIDARR_TAG)
-    res = lidarr_post("tag", {"label": LIDARR_TAG})
-    tag_id = res.json()["id"]
-    logger.info("Created tag: %s (ID: %s)", LIDARR_TAG, tag_id)
-    return tag_id
-
 
 def main() -> None:
     """Synchronize disliked albums from Plex to Lidarr.
-    
+
     Reads a Plex playlist to identify disliked albums and tags them in Lidarr
     with a configured tag. Supports dry run mode for preview without making changes.
     """
@@ -211,23 +155,29 @@ def main() -> None:
                     logger.info(
                         "Skipping delete due to dry-run: %s - %s",
                         artist_name,
-                        album["title"]
+                        album["title"],
                     )
                     delete_count += 1
                     continue
 
-                logger.info("Deleting album in Lidarr: %s - %s", artist_name, album["title"])
-                lidarr_delete(f"album/{album['id']}?deleteFiles=true&addImportListExclusion=true")
+                logger.info(
+                    "Deleting album in Lidarr: %s - %s", artist_name, album["title"]
+                )
+                lidarr_delete(
+                    f"album/{album['id']}?deleteFiles=true&addImportListExclusion=true"
+                )
                 delete_count += 1
 
         logger.info("Sync complete. Deleted %d albums", delete_count)
 
-    except (requests.exceptions.RequestException,
-            ConnectionError,
-            TimeoutError,
-            ValueError,
-            KeyError,
-            AttributeError) as e:
+    except (
+        requests.exceptions.RequestException,
+        ConnectionError,
+        TimeoutError,
+        ValueError,
+        KeyError,
+        AttributeError,
+    ) as e:
         logger.error("Sync failed: %s", e)
         sys.exit(1)
 

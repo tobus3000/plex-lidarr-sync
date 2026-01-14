@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+Nothing yet
+
+### Changed
+
+Nothing yet
+
+## [1.0.1] - 2026-01-14
+
+### Added
+
 - **Installation Options**: Support for cloning either the latest development version (main branch) or specific release tags
 - **Update Options**: Support for updating to either the latest development version or specific release tags
 - **Release Guide**: Links to releases page for easy version discovery
@@ -16,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Direct delete of Albums in Lidarr**: Added `lidarr_delete()` function to delete album instead of tagging.
 - **README.md**: Updated Installation section with dual options (main branch vs release tag)
 - **README.md**: Updated Updating section with dual options (main branch vs release tag)
 - **Documentation**: Improved clarity for users choosing between development and stable versions
@@ -100,4 +111,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 [Unreleased]: https://github.com/tobus3000/plex-lidarr-sync/compare/v1.0.0...HEAD
+[1.0.1]: https://github.com/tobus3000/plex-lidarr-sync/releases/tag/v1.0.1
 [1.0.0]: https://github.com/tobus3000/plex-lidarr-sync/releases/tag/v1.0.0
