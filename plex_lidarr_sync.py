@@ -123,12 +123,11 @@ def lidarr_post(endpoint: str, payload: Dict[str, Any]) -> requests.Response:
         logger.error("Failed to POST to Lidarr (%s): %s", endpoint, e)
         sys.exit(1)
 
-def lidarr_put(endpoint: str, payload: Dict[str, Any]) -> requests.Response:
-    """Send a PUT request to the Lidarr API.
+def lidarr_delete(endpoint: str) -> requests.Response:
+    """Send a DELETE request to the Lidarr API.
     
     Args:
         endpoint: The API endpoint path (without base URL).
-        payload: The JSON payload to send in the request body.
         
     Returns:
         The response object from the API.
@@ -137,16 +136,15 @@ def lidarr_put(endpoint: str, payload: Dict[str, Any]) -> requests.Response:
         SystemExit: If the request fails.
     """
     try:
-        response = requests.put(
+        response = requests.delete(
             f"{LIDARR_URL}/api/v1/{endpoint}",
-            json=payload,
             headers=headers,
             timeout=REQUEST_TIMEOUT
         )
         response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
-        logger.error("Failed to PUT to Lidarr (%s): %s", endpoint, e)
+        logger.error("Failed to DELETE from Lidarr (%s): %s", endpoint, e)
         sys.exit(1)
 
 def get_or_create_tag() -> Optional[int]:
@@ -194,32 +192,35 @@ def main() -> None:
         playlist = plex.playlist(PLAYLIST_NAME)
 
         disliked_albums = set()
-        for item in playlist.items():
-            if hasattr(item, "parentTitle"):
-                disliked_albums.add(item.parentTitle)
+        if playlist:
+            for item in playlist.items():
+                if hasattr(item, "parentTitle"):
+                    disliked_albums.add(item.parentTitle)
 
         logger.info("Found %d disliked albums in Plex", len(disliked_albums))
 
         logger.info("Fetching albums from Lidarr")
         lidarr_albums = lidarr_get("album")
-        tag_id = get_or_create_tag()
 
-        tagged_count = 0
+        delete_count = 0
         for album in lidarr_albums:
             if album["title"] in disliked_albums:
                 artist_name = album.get("artist", {}).get("artistName", "Unknown")
-                logger.info("Tagging: %s - %s", artist_name, album["title"])
 
                 if DRY_RUN:
-                    tagged_count += 1
+                    logger.info(
+                        "Skipping delete due to dry-run: %s - %s",
+                        artist_name,
+                        album["title"]
+                    )
+                    delete_count += 1
                     continue
 
-                if tag_id is not None:
-                    album["tags"].append(tag_id)
-                    lidarr_put(f"album/{album['id']}", album)
-                    tagged_count += 1
+                logger.info("Deleting album in Lidarr: %s - %s", artist_name, album["title"])
+                lidarr_delete(f"album/{album['id']}?deleteFiles=true&addImportListExclusion=true")
+                delete_count += 1
 
-        logger.info("Sync complete. Tagged %d albums", tagged_count)
+        logger.info("Sync complete. Deleted %d albums", delete_count)
 
     except (requests.exceptions.RequestException,
             ConnectionError,
