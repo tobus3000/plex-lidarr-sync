@@ -5,15 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.2] - Unreleased
 
 ### Added
 
-Nothing yet
+- **Docker Swarm Mode Support**: New `docker-swarm-compose.yml` configuration for deploying as a cronjob service in Docker Swarm clusters.
 
 ### Changed
 
-Nothing yet
+- **Documentation Reorganization**: Moved all Docker-specific installation, usage, and deployment instructions from README.md to dedicated `DOCKER.md` file for better organization and maintainability.
+
+---
 
 ## [1.0.1] - 2026-01-14
 
@@ -32,6 +34,8 @@ Nothing yet
 - **Documentation**: Improved clarity for users choosing between development and stable versions
 - **plex_lidarr_sync.py**: Modified logging configuration to output to STDOUT for Docker capture
 - **docker-compose.yml**: Updated configuration to properly capture application logs
+
+---
 
 ## [1.0.0] - 2026-01-10
 
@@ -110,6 +114,6 @@ Nothing yet
 
 ---
 
-[Unreleased]: https://github.com/tobus3000/plex-lidarr-sync/compare/v1.0.0...HEAD
+[1.0.2]: https://github.com/tobus3000/plex-lidarr-sync/releases/tag/v1.0.2
 [1.0.1]: https://github.com/tobus3000/plex-lidarr-sync/releases/tag/v1.0.1
 [1.0.0]: https://github.com/tobus3000/plex-lidarr-sync/releases/tag/v1.0.0

@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  plex-lidarr-sync:
+    image: tobotec/plex-lidarr-sync:latest
+    environment:
+      environment:
+      PLEX_URL: ${PLEX_URL}
+      PLEX_TOKEN: ${PLEX_TOKEN}
+      LIDARR_URL: ${LIDARR_URL}
+      LIDARR_API_KEY: ${LIDARR_API_KEY}
+      PLEX_MUSIC_LIBRARY: ${PLEX_MUSIC_LIBRARY}
+      PLEX_PLAYLIST_NAME: ${PLEX_PLAYLIST_NAME}
+      REQUEST_TIMEOUT: ${REQUEST_TIMEOUT}
+      DRY_RUN: ${DRY_RUN}
+      PYTHONUNBUFFERED: "1"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=plex-lidarr-sync"
+    deploy:
+      mode: replicated
+      replicas: 0
+      placement:
+        constraints:
+          - node.role == worker
+      labels:
+        - "swarm.cronjob.enable=true"
+        - "swarm.cronjob.schedule=0 7 * * *"
+        - "swarm.cronjob.skip-running=false"
+      restart_policy:
+        condition: none
